@@ -1,0 +1,17 @@
+{
+  "name": "realtime-chat-app-backend",
+  "version": "1.0.0",
+  "description": "This application is an attempt at implementing an instant messaging application using the WebSocket protocol. The intended clients are a web client, an Android client, and an iOS client.",
+  "main": "index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "dependencies": {
+    "@types/express": "^4.17.20",
+    "@types/ws": "^8.5.8",
+    "express": "^4.18.2",
+    "ws": "^8.14.2"
+  },
+  "license": "ISC"
+}
