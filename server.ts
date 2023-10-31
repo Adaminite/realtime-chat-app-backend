@@ -50,7 +50,8 @@ wsServer.on('connection', (ws: webSocket, req: IncomingMessage) => {
         try{
             const message = data.toString('utf-8');
             console.log(message)
-            broadcast(message, wsServer);
+            const jsonMessage = JSON.parse(message);
+            broadcast(jsonMessage, users, channels);
         } catch(e: any){
             console.log(e);
             ws.send("Failed to send");
@@ -73,5 +74,7 @@ wsServer.on('connection', (ws: webSocket, req: IncomingMessage) => {
 export {
     httpServer,
     channels,
-    wsServer
+    users,
+    wsServer,
+    webSocket
 }

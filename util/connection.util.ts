@@ -1,4 +1,3 @@
-import ws from "ws";
 import { Buffer } from 'buffer';
 import crypto from 'crypto';
 import querystring from 'querystring';
@@ -11,7 +10,6 @@ function generateUniqueID() : string {
 function parseQueryString(url: string) : any {
     const toParse = url.substring(2); // assume that the url starts with '/?'
     const parsedQuery = querystring.parse(toParse);
-    console.log(parsedQuery);
     return parsedQuery;
 }
 

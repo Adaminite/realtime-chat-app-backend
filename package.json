@@ -5,7 +5,8 @@
   "description": "This application is an attempt at implementing an instant messaging application using the WebSocket protocol. The intended clients are a web client, an Android client, and an iOS client.",
   "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "tsc && node dist/index.js"
   },
   "author": "",
   "dependencies": {
@@ -14,7 +15,6 @@
     "@types/ws": "^8.5.8",
     "cors": "^2.8.5",
     "express": "^4.18.2",
-    "nanoid": "^5.0.2",
     "ws": "^8.14.2"
   },
   "license": "ISC"
