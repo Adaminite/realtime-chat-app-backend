@@ -16,11 +16,8 @@ router.get('/', (req, res) => {
 
 router.post('/create', (req, res) => {
     if(req.body && req.body.channelName){
-        channels.set(req.body.channelName, new Set<ws.WebSocket>());
-
+        channels.set(req.body.channelName, new Set<string>());
     }
-    console.log(req);
-    console.log(req.body);
     res.send({message: "Received"});
 });
 
