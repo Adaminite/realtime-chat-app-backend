@@ -8,7 +8,7 @@ This application is an attempt at implementing an instant messaging application 
 
 2. Intended plan is to use Kotlin (Android) and Swift (iOS) to implement the mobile clients. Dart + Flutter is a great option, but for learning purposes, I felt that working with more native languages would be more fruitful.
 
-3. Cassandra for a DB seems to be ideal. It was the database of choice for Discord (https://discord.com/blog/how-discord-stores-trillions-of-messages), with one of the reasons being it great for write-heavy use cases
+3. Initially, Cassandra for a DB seemed to be ideal. It was the database of choice for Discord (https://discord.com/blog/how-discord-stores-trillions-of-messages), with one of the reasons being it great for write-heavy use cases. Discord later switched to ScyllaDB. However, I opted for MySQL, because I have limited experience working with relational databases, so I thought select a database like MySQL would be really helpful. In essence, I picked MySQL to learn how to work with a relational database. 
 
 4. Using a project management tool (Plane, which is open source) to help me keep track of the project. It is a large project with a lot of moving parts, so I thought it would be greatly beneficial for me as a developer
 
@@ -52,8 +52,7 @@ This application is an attempt at implementing an instant messaging application 
 * Express.js
 * Angular
 * WebSockets 
-* SQL (select one)
-* Cassandra (or some other NoSQL)
+* SQL (MySQL)
 * Kotlin
 * Swift
 * Docker?
