@@ -46,6 +46,42 @@ This application is an attempt at implementing an instant messaging application 
 
 10. I want the UI to be accessible (TBD)
 
+### Database Design (MySQL)
+
+#### User Table
+* id (primary key): BIGINT
+* username: VARCHAR(20)
+* password_hash: CHAR(); size depends on the resulting salt + hash size + auth method. Likely a hash such as SHA-256, so CHAR would need 32 bytes to store in that case.
+* salt: CHAR(); fixed size and depends on the salt size
+* email: VARCHAR(40)
+* phone_number: VARCHAR(20)
+
+#### Channel Table
+* id (primary): BIGINT
+* created_by: BIGINT
+* created_at: TIMESTAMP
+
+
+#### Message Table
+* id (primary key): BIGINT
+* timestamp: TIMESTAMP
+* sender_id: BIGINT
+* receiver_id: BIGINT
+* text: VARCHAR(2000)
+
+#### User to Channel Table
+* id (primary key): BIGINT
+* member_id: BIGINT
+* channel_id: BIGINT
+
+
+#### Important Questions to Consider
+1. How to handle the one user to many channels and one channel to many users bidirectional relationship?
+   
+    * Use a table to store the user <-> channel mappings
+
+2. How to move the storage of users to WebSockets outside of the server's memory, if important?
+
 ## Technologies + Skills (Planned/Intended)
 
 * Node.js
