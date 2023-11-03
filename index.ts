@@ -1,14 +1,8 @@
 import { httpServer as server, db } from "./server.js";
+import { initializeDatabase } from "./util/db.util.js";
 
-server.listen(3000, () => {
+initializeDatabase(db);
 
-    db.query('CREATE DATABASE IF NOT EXISTS testing', (err) => {
-        if(err){
-            console.log(err);
-            return;
-        }
-
-        console.log("Successfully created DB");
-    });
-
+server.listen(process.env.PORT, () => {
+    console.log("Listening on port " + process.env.PORT);
 });
