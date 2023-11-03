@@ -2,6 +2,10 @@
 
 This application is an attempt at implementing an instant messaging application using the WebSocket protocol. The intended clients are a web client, an Android client, and an iOS client.  
 
+## Disclaimer
+
+Some of the Git commits/changes in the history may appear out of order of when they were actually implemented/introduced. This is likely because I may have worked for an extended period of time without committing changes and thus commit files accordingly to attempt to reflect individual/independent additions/changes.
+
 ## Some Important Decisions
 
 1. Wanted to learn Go and add it to my toolset. However, after some pondering, a Medium article by Matt Tomasetti (https://matttomasetti.medium.com/websocket-performance-comparison-10dc89367055) influenced me to use NodeJS due to it seeming to outperform Go. Messaging applications are request heavy, so NodeJS is a solid choice.
