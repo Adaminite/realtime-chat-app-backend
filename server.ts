@@ -1,12 +1,29 @@
 import express from 'express';
 import cors from 'cors';
+import mysql from 'mysql2';
+import 'dotenv/config';
 import {IncomingMessage, Server, createServer} from 'http';
 import ws, { WebSocketServer } from 'ws';
 import { router as channelsRouter } from './channels/router.js';
 import { broadcast } from './util/message.util.js';
 import { generateUniqueID, parseQueryString } from './util/connection.util.js';
 
+
 const app: express.Application = express();
+
+console.log(process.env.DB_HOST);
+const db = mysql.createConnection({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASS
+});
+
+db.connect((err) => {
+    if(err){
+        console.log(err);
+        return;
+    }
+});
 
 app.use(cors());
 
@@ -49,7 +66,6 @@ wsServer.on('connection', (ws: webSocket, req: IncomingMessage) => {
     ws.on('message', (data: ws.RawData, isBinary: boolean) => {
         try{
             const message = data.toString('utf-8');
-            console.log(message)
             const jsonMessage = JSON.parse(message);
             broadcast(jsonMessage, users, channels);
         } catch(e: any){
@@ -73,6 +89,7 @@ wsServer.on('connection', (ws: webSocket, req: IncomingMessage) => {
 
 export {
     httpServer,
+    db,
     channels,
     users,
     wsServer,
