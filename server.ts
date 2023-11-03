@@ -5,13 +5,13 @@ import 'dotenv/config';
 import {IncomingMessage, Server, createServer} from 'http';
 import ws, { WebSocketServer } from 'ws';
 import { router as channelsRouter } from './channels/router.js';
+import { router as usersRouter } from './users/router.js';
 import { broadcast } from './util/message.util.js';
 import { generateUniqueID, parseQueryString } from './util/connection.util.js';
 
 
 const app: express.Application = express();
 
-console.log(process.env.DB_HOST);
 const db = mysql.createConnection({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
@@ -35,6 +35,7 @@ const users : Map<string, Set<webSocket>> = new Map<string, Set<webSocket>>();
 
 
 app.use("/channels", channelsRouter);
+app.use("/users", usersRouter);
 
 const httpServer: Server = createServer(app);
 

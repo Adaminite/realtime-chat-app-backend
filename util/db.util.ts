@@ -1,10 +1,11 @@
 import { Connection } from "mysql2";
+import { HashedPassword } from "./auth.util.js";
 
 function createTables(db: Connection) : void {
     db.query('CREATE TABLE IF NOT EXISTS users' + 
         ' (id BIGINT AUTO_INCREMENT PRIMARY KEY,' +
         ' username VARCHAR(20),' + 
-        ' password_hash CHAR(32),' +
+        ' password_hash CHAR(64),' +
         ' salt CHAR(12),' +
         ' email VARCHAR(40),' +
         ' phone_number VARCHAR(20))', (err) => {
@@ -45,7 +46,26 @@ function initializeDatabase(db : Connection) : void {
     createTables(db);
 }
 
+function addUser(db: Connection, username: string, db_password: HashedPassword) : void{
+    const escapedHash = db.escape(db_password.hash);
+    const escapedSalt = db.escape(db_password.salt);
+    const query: string = 'INSERT INTO users (username, password_hash, salt) VALUE' +
+    ` (${username}, ${escapedHash}, ${db.escape(escapedSalt)})`;
+    try{
+        db.query(query, (error, result: any, fields) => {
+            if(error){
+                throw error;
+            }
+    
+            console.log(result);
+        });
+    } catch(err){
+        throw err;
+    }
+
+}
 
 export {
-    initializeDatabase
+    initializeDatabase,
+    addUser
 }

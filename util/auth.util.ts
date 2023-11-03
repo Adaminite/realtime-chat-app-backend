@@ -1,20 +1,26 @@
 import crypto from 'crypto';
 
-
-function generateSalt(size: number) : string {
-    return crypto.randomBytes(size).toString('utf-8');
+interface HashedPassword {
+    hash: string,
+    salt: string
 }
 
-function hashPassword(password: string, salt: string = "") : string {
+function generateSalt(size: number) : string {
+    return crypto.randomBytes(size).toString('hex');
+}
+
+function hashPassword(password: string, salt: string = "") : HashedPassword {
     const hash: crypto.Hash = crypto.createHash('sha256');
     hash.update(process.env.GLOBAL_SALT || "");
-    hash.update(salt ? salt : generateSalt(12));
+    salt = salt ? salt : generateSalt(6);
+    hash.update(salt);
     hash.update(password);
     
-    return hash.digest('hex');
+    return {hash: hash.digest('hex'), salt: salt};
 }
 
 
 export {
-    hashPassword
+    hashPassword,
+    HashedPassword
 }
