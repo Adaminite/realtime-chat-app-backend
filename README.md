@@ -48,7 +48,7 @@ This application is an attempt at implementing an instant messaging application 
 
 ### Database Design (MySQL)
 
-#### User Table
+#### Users Table
 * id (primary key): BIGINT
 * username: VARCHAR(20)
 * password_hash: CHAR(); size depends on the resulting salt + hash size + auth method. Likely a hash such as SHA-256, so CHAR would need 32 bytes to store in that case.
@@ -56,15 +56,15 @@ This application is an attempt at implementing an instant messaging application 
 * email: VARCHAR(40)
 * phone_number: VARCHAR(20)
 
-#### Channel Table
+#### Channels Table
 * id (primary): BIGINT
 * created_by: BIGINT
 * created_at: TIMESTAMP
 
 
-#### Message Table
+#### Messages Table
 * id (primary key): BIGINT
-* timestamp: TIMESTAMP
+* time_stamp: TIMESTAMP
 * sender_id: BIGINT
 * receiver_id: BIGINT
 * text: VARCHAR(2000)
