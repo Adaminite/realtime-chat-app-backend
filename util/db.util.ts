@@ -49,8 +49,11 @@ function initializeDatabase(db : Connection) : void {
 function addUser(db: Connection, username: string, db_password: HashedPassword) : void{
     const escapedHash = db.escape(db_password.hash);
     const escapedSalt = db.escape(db_password.salt);
+    console.log(escapedHash);
+    console.log(escapedSalt);
+
     const query: string = 'INSERT INTO users (username, password_hash, salt) VALUE' +
-    ` (${username}, ${escapedHash}, ${db.escape(escapedSalt)})`;
+    ` (${username}, ${escapedHash}, ${escapedSalt})`;
     try{
         db.query(query, (error, result: any, fields) => {
             if(error){
