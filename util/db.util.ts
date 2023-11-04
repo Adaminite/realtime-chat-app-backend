@@ -46,29 +46,36 @@ function initializeDatabase(db : Connection) : void {
     createTables(db);
 }
 
-function addUser(db: Connection, username: string, db_password: HashedPassword) : void{
+async function queryDatabase(query: string, db: Connection): Promise<any>{
+    return new Promise((resolve, reject) => {
+        db.query(query, (error, result: any, fields) => {
+            if(error){
+                reject(error);
+            }
+            resolve(result);
+        })
+    });
+}
+
+async function addUser(db: Connection, username: string, db_password: HashedPassword) : Promise<any>{
     const escapedHash = db.escape(db_password.hash);
     const escapedSalt = db.escape(db_password.salt);
-    console.log(escapedHash);
-    console.log(escapedSalt);
 
     const query: string = 'INSERT INTO users (username, password_hash, salt) VALUE' +
     ` (${username}, ${escapedHash}, ${escapedSalt})`;
-    try{
-        db.query(query, (error, result: any, fields) => {
-            if(error){
-                throw error;
-            }
-    
-            console.log(result);
-        });
-    } catch(err){
-        throw err;
-    }
 
+    
+    try{
+        const result = await queryDatabase(query, db);
+        return result;
+    } catch(e){
+        throw e;
+    }
+    
 }
 
 export {
     initializeDatabase,
-    addUser
+    addUser,
+    queryDatabase
 }
