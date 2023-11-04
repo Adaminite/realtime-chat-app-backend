@@ -64,14 +64,9 @@ async function addUser(db: Connection, username: string, db_password: HashedPass
     const query: string = 'INSERT INTO users (username, password_hash, salt) VALUE' +
     ` (${username}, ${escapedHash}, ${escapedSalt})`;
 
+    const result = await queryDatabase(query, db);
     
-    try{
-        const result = await queryDatabase(query, db);
-        return result;
-    } catch(e){
-        throw e;
-    }
-    
+    return result;
 }
 
 export {
