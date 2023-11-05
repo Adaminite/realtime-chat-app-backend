@@ -1,6 +1,7 @@
 import { Buffer } from 'buffer';
 import crypto from 'crypto';
 import querystring from 'querystring';
+import { users, channels } from '../server.js';
 
 function generateUniqueID() : string {
     const buffer : Buffer = crypto.randomBytes(20);

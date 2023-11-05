@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { json } from 'express';
 import cors from 'cors';
 import mysql from 'mysql2';
 import 'dotenv/config';
@@ -6,8 +6,10 @@ import {IncomingMessage, Server, createServer} from 'http';
 import ws, { WebSocketServer } from 'ws';
 import { router as channelsRouter } from './channels/router.js';
 import { router as usersRouter } from './users/router.js';
+import { router as messagesRouter } from './messages/router.js';
 import { broadcast } from './util/message.util.js';
 import { generateUniqueID, parseQueryString } from './util/connection.util.js';
+import { getChannelsByUser, getUserByUsername } from './util/db.util.js';
 
 
 const app: express.Application = express();
@@ -27,15 +29,26 @@ db.connect((err) => {
 
 app.use(cors());
 
-// channels map channel names to a set of user names within that channel
-const channels : Map<string, Set<string>> = new Map<string, Set<string>>();
 
-// store the web socket connections associated with a given user name
-const users : Map<string, Set<webSocket>> = new Map<string, Set<webSocket>>();
+/* The following data structures are the in-memory store of data required for the WebSocket connections
+   to function properly
+*/
 
+// channels map to map channel ids to channel names
+const idToChannelName: Map<number, String> = new Map<number, String>();
+
+// channels map a channel id to user ids
+const channels : Map<number, Set<number>> = new Map<number, Set<number>>();
+
+// store the web socket connections associated with a given user id
+const users : Map<number, Set<webSocket>> = new Map<number, Set<webSocket>>();
+
+// maps user ids to user names (so receivers know who sent the message)
+const idToUserName: Map<number, string> = new Map<number, string>();
 
 app.use("/channels", channelsRouter);
 app.use("/users", usersRouter);
+app.use("/messages", messagesRouter);
 
 const httpServer: Server = createServer(app);
 
@@ -45,29 +58,77 @@ const wsServer: ws.WebSocketServer = new WebSocketServer({
 });
 
 interface webSocket extends ws.WebSocket{
-    connectionId?: string
+    connectionId?: string,
+    userId?: number,
+    username?: string
 }
 
-wsServer.on('connection', (ws: webSocket, req: IncomingMessage) => {
-    ws.connectionId = generateUniqueID();
+wsServer.on('connection', async (ws: webSocket, req: IncomingMessage) => {
     const parsedQuery = parseQueryString(req.url || "");
-
+    console.log(req.url);
+    console.log(parsedQuery);
     if(!parsedQuery["username"]){
         console.log("No username associated with connection. Aborting.");
         ws.close();
+        return;
     }
 
     const username: string = parsedQuery["username"];
-    if(!users.has(username)){
-        users.set(username, new Set<webSocket>());
+    let userMatch = null;
+    try{
+        userMatch = await getUserByUsername(db, username);
+
+        if(userMatch.length === 0){
+            throw "No username associated with connection";
+        }
+
+        userMatch = userMatch[0];
+    } catch(err){
+        console.log(err);
+        ws.close();
+        return;
+    }
+    console.log(userMatch);
+
+    ws.connectionId = generateUniqueID();
+    ws.userId = userMatch.id;
+    ws.username = userMatch.id;
+
+    if(!users.has(userMatch.id)){
+        users.set(userMatch.id, new Set<webSocket>());
+        idToUserName.set(userMatch.id, userMatch.username);
+
+        let channelMatch = null;
+        try{
+            channelMatch = await getChannelsByUser(db, userMatch.id);
+        } catch(err){
+            console.log(err);
+            ws.close();
+            return;
+        }
+    
+        for(let channel of channelMatch){
+            if(!channels.has(channel.id)){
+                channels.set(channel.id, new Set<number>());
+            }
+
+            if(!idToChannelName.has(channel.id)){
+                idToChannelName.set(channel.id, channel.name);
+            }
+
+            channels.get(channel.id)?.add(userMatch.id);  
+        }
     }
 
-    users.get(username)?.add(ws);
+
+    users.get(userMatch.id)?.add(ws);
+
 
     ws.on('message', (data: ws.RawData, isBinary: boolean) => {
         try{
             const message = data.toString('utf-8');
             const jsonMessage = JSON.parse(message);
+            console.log(jsonMessage);
             broadcast(jsonMessage, users, channels);
         } catch(e: any){
             console.log(e);
@@ -77,15 +138,17 @@ wsServer.on('connection', (ws: webSocket, req: IncomingMessage) => {
 
     ws.on('close', (code: number, reason: Buffer) => {
         if(username){
-            const sockets : Set<webSocket> | undefined = users.get(username);
+            const sockets = users.get(Number(ws.userId)) || new Set<webSocket>();
             sockets?.forEach((socket) : void => {
                 if(ws.connectionId === socket.connectionId){
                     sockets.delete(socket);
                 }
             });
-            console.log(username + "'s remaining sockets: " + users.get(username)?.size);
+            console.log(username + "'s remaining sockets: " + users.get(Number(ws.userId))?.size);
         }
     });
+
+
 });
 
 export {

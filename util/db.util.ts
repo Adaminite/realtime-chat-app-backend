@@ -1,50 +1,43 @@
 import { Connection } from "mysql2";
 import { HashedPassword } from "./auth.util.js";
 
-function createTables(db: Connection) : void {
-    db.query('CREATE TABLE IF NOT EXISTS users' + 
-        ' (id BIGINT AUTO_INCREMENT PRIMARY KEY,' +
-        ' username VARCHAR(20),' + 
-        ' password_hash CHAR(64),' +
-        ' salt CHAR(12),' +
-        ' email VARCHAR(40),' +
-        ' phone_number VARCHAR(20))', (err) => {
-            console.log(err);
-        });
+async function createTables(db: Connection) : Promise<void> {
+    await queryDatabase('CREATE TABLE IF NOT EXISTS users' + 
+    ' (id BIGINT AUTO_INCREMENT PRIMARY KEY,' +
+    ' username VARCHAR(20),' + 
+    ' password_hash CHAR(64),' +
+    ' salt CHAR(12),' +
+    ' email VARCHAR(40),' +
+    ' phone_number VARCHAR(20))', db);
 
-    db.query('CREATE TABLE IF NOT EXISTS channels' + 
-        ' (id BIGINT AUTO_INCREMENT PRIMARY KEY,' +
-        ' created_by BIGINT,' + 
-        ' created_at TIMESTAMP,' + 
-        ' name VARCHAR(25),' +
-        ' FOREIGN KEY (created_by) REFERENCES users (id))', (err) => {
-            console.log(err);
-        });
-    
-    db.query('CREATE TABLE IF NOT EXISTS messages' + 
-        ' (id BIGINT AUTO_INCREMENT PRIMARY KEY,' +
-        ' time_stamp TIMESTAMP, ' +
-        ' sender_id BIGINT, ' + 
-        ' receiver_id BIGINT, ' + 
-        ' text VARCHAR(2000), ' +
-        ' FOREIGN KEY (sender_id) REFERENCES users (id), ' +
-        ' FOREIGN KEY (receiver_id) REFERENCES channels (id))', (err) => {
-            console.log(err);
-        });
-    
-    db.query('CREATE TABLE IF NOT EXISTS user_to_channel' + 
-        ' (id BIGINT AUTO_INCREMENT PRIMARY KEY,' + 
-        ' member_id BIGINT,' + 
-        ' channel_id BIGINT,' + 
-        ' FOREIGN KEY (member_id) REFERENCES users (id),' + 
-        ' FOREIGN KEY (channel_id) REFERENCES channels (id))', (err) => {
-            console.log(err);
-        });    
+    await queryDatabase('CREATE TABLE IF NOT EXISTS channels' + 
+    ' (id BIGINT AUTO_INCREMENT PRIMARY KEY,' +
+    ' created_by BIGINT,' + 
+    ' created_at TIMESTAMP,' + 
+    ' name VARCHAR(25),' +
+    ' FOREIGN KEY (created_by) REFERENCES users (id))', db);
+
+    await queryDatabase('CREATE TABLE IF NOT EXISTS messages' + 
+    ' (id BIGINT AUTO_INCREMENT PRIMARY KEY,' +
+    ' time_stamp TIMESTAMP, ' +
+    ' sender_id BIGINT, ' + 
+    ' receiver_id BIGINT, ' + 
+    ' text VARCHAR(2000), ' +
+    ' FOREIGN KEY (sender_id) REFERENCES users (id), ' +
+    ' FOREIGN KEY (receiver_id) REFERENCES channels (id))', db);
+
+    await queryDatabase('CREATE TABLE IF NOT EXISTS user_to_channel' + 
+    ' (id BIGINT AUTO_INCREMENT PRIMARY KEY,' + 
+    ' member_id BIGINT,' + 
+    ' channel_id BIGINT,' + 
+    ' FOREIGN KEY (member_id) REFERENCES users (id),' + 
+    ' FOREIGN KEY (channel_id) REFERENCES channels (id))', db);
 }
-function initializeDatabase(db : Connection) : void {
+
+async function initializeDatabase(db : Connection) : Promise<void> {
     db.query(`CREATE DATABASE IF NOT EXISTS ${process.env.DB_NAME}`);
     db.query(`USE ${process.env.DB_NAME}`);
-    createTables(db);
+    await createTables(db);
 }
 
 async function queryDatabase(query: string, db: Connection): Promise<any>{
@@ -98,7 +91,17 @@ async function addUserToChannel(db: Connection, userId: number, channelId: numbe
     return await queryDatabase(insertQuery, db);
 }
 
-async function getUsersInChannel(db: Connection, channelId: number){
+async function addMessage(db: Connection, userId: number, channelId: number, message: string){
+    const escapedUserId = db.escape(userId);
+    const escapedChannelId = db.escape(channelId);
+    const escapeedMessage = db.escape(message);
+    const insertQuery: string = 'INSERT INTO messages (sender_id, receiver_id, text, time_stamp)' +
+    ` (${escapedUserId}, ${escapedChannelId}, ${escapeedMessage})`;
+
+    return await queryDatabase(insertQuery, db);
+}
+
+async function getUsersInChannel(db: Connection, channelId: number): Promise<any>{
     const escapedChannelId = db.escape(channelId);
 
     const query: string = 'SELECT member_id, channel_id FROM user_to_channel WHERE ' + 
@@ -107,11 +110,40 @@ async function getUsersInChannel(db: Connection, channelId: number){
     return await queryDatabase(query, db);
 }
 
+async function getMessagesByChannel(db: Connection, channelId: number): Promise<any> {
+    const escapedChannelId = db.escape(channelId);
+    const query: string = 'SELECT messages.*, users.username FROM message' +
+    ' LEFT JOIN users ON messages.sender_id = users.id' + 
+    ` WHERE messages.receiver_id=${escapedChannelId}`;
+    return await queryDatabase(query, db);
+}
+
+async function getUserByUsername(db: Connection, username: string): Promise<any> {
+    if(username.length > 20){
+        throw "Invalid username";
+    }
+
+    const query = 'SELECT * FROM users WHERE username=' + db.escape(username);
+
+    return await queryDatabase(query, db);
+}
+
+async function getChannelsByUser(db: Connection, userId: number): Promise<any>{
+    const query: string = 'SELECT channels.* FROM user_to_channel' +
+    ` RIGHT JOIN channels ON user_to_channel.member_id = ${db.escape(userId)}`;
+
+    return await queryDatabase(query, db);
+}   
+
 export {
     initializeDatabase,
     addUser,
     addChannel,
     addUserToChannel,
+    addMessage,
     getUsersInChannel,
+    getChannelsByUser,
+    getUserByUsername,
+    getMessagesByChannel,
     queryDatabase
 }

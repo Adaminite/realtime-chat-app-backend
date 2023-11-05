@@ -49,8 +49,8 @@ router.post('/login', async (req, res) => {
     const escapedUsername = db.escape(body["username"]);
     const attemptedPassword = body["password"];
 
-    let query = 'SELECT * FROM users WHERE username = ' + escapedUsername;
     try{
+        let query = 'SELECT * FROM users WHERE username = ' + escapedUsername;
         const result = await queryDatabase(query, db);
         if(!result.length || result.length === 0){
             throw "User not found";

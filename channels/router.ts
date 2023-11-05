@@ -1,6 +1,7 @@
 import express from 'express';
 import { users, channels, db } from '../server.js';
 import { addChannel, addUserToChannel, getUsersInChannel } from '../util/db.util.js';
+import { broadcast } from '../util/message.util.js';
 
 const router = express.Router();
 
@@ -40,34 +41,24 @@ router.post('/create', async (req, res) => {
 
     try{
         const result = await addChannel(db, userId, channelName);
-        //res.send({result});
         const channelId = result.insertId;
 
-        const insertResult = await addUserToChannel(db, userId, channelId);
-        res.send({channelId});
+        await addUserToChannel(db, userId, channelId);
+
+        broadcast({
+            userId,
+            channelName,
+            channelId,
+            event: "createChannel"
+        }, users, channels);
+
+        res.send({
+            result: "Successfully added channel"
+        });
 
     } catch(err){
         res.send({err});
     }
-
-    /*
-    channels.set(req.body.channelName, new Set<string>());
-
-    users.forEach((value, key) => {
-        value.forEach((socket) => {
-            const message : channelCreationEvent = {
-                channelName: req.body.channelName,
-                eventName: "createChannel"
-            }
-
-            socket.send(JSON.stringify(message));
-        });
-
-        channels.get(req.body.channelName)?.add(key);
-    });
-
-    */
-    //const username = req.body["username"];
 });
 
 export {
