@@ -64,6 +64,7 @@ Some of the Git commits/changes in the history may appear out of order of when t
 * id (primary): BIGINT
 * created_by: BIGINT
 * created_at: TIMESTAMP
+* name: VARCHAR(25)
 
 
 #### Messages Table

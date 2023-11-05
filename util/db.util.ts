@@ -16,6 +16,7 @@ function createTables(db: Connection) : void {
         ' (id BIGINT AUTO_INCREMENT PRIMARY KEY,' +
         ' created_by BIGINT,' + 
         ' created_at TIMESTAMP,' + 
+        ' name VARCHAR(25),' +
         ' FOREIGN KEY (created_by) REFERENCES users (id))', (err) => {
             console.log(err);
         });
@@ -69,8 +70,48 @@ async function addUser(db: Connection, username: string, db_password: HashedPass
     return result;
 }
 
+async function addChannel(db: Connection, userId: number, channelName: string) : Promise<any>{
+    const escapedUserId = db.escape(userId);
+    const escapedChannelName = db.escape(channelName);
+
+    const query: string = 'INSERT into channels (created_by, created_at, name) VALUE' + 
+    ` (${escapedUserId}, CURRENT_TIMESTAMP, ${escapedChannelName})`;
+
+    return await queryDatabase(query, db);
+}
+
+async function addUserToChannel(db: Connection, userId: number, channelId: number): Promise<any>{
+    const escapedUserId = db.escape(userId);
+    const escapedChannelId = db.escape(channelId);
+
+    const validationQuery: string = 'SELECT * FROM user_to_channel WHERE ' + 
+    ` member_id=${escapedUserId} AND channel_id=${escapedChannelId}`;
+
+    const check = await queryDatabase(validationQuery, db);
+    if(check.length !== 0){
+        throw "User already a member of this channel";
+    }
+
+    const insertQuery: string = 'INSERT INTO user_to_channel (member_id, channel_id) VALUE' + 
+    ` (${escapedUserId}, ${escapedChannelId})`;
+
+    return await queryDatabase(insertQuery, db);
+}
+
+async function getUsersInChannel(db: Connection, channelId: number){
+    const escapedChannelId = db.escape(channelId);
+
+    const query: string = 'SELECT member_id, channel_id FROM user_to_channel WHERE ' + 
+    ` channel_id=${escapedChannelId}`;
+
+    return await queryDatabase(query, db);
+}
+
 export {
     initializeDatabase,
     addUser,
+    addChannel,
+    addUserToChannel,
+    getUsersInChannel,
     queryDatabase
 }
