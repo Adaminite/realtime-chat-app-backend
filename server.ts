@@ -126,14 +126,17 @@ wsServer.on('connection', async (ws: webSocket, req: IncomingMessage) => {
 
     ws.on('message', (data: ws.RawData, isBinary: boolean) => {
         try{
-            const message = data.toString('utf-8');
-            const jsonMessage = JSON.parse(message);
-            console.log(jsonMessage);
-            broadcast(jsonMessage, users, channels);
-            addMessageToDatabase(db, Number(ws.userId), jsonMessage["channelId"], jsonMessage["message"]);
+            const message = JSON.parse(data.toString('utf-8'));
+            if(!message["event"] || message["event"] !== "broadcastMessage"){
+                throw "User can only send channel messages via the WS connection";
+            }
+            broadcast(message, users, channels);
+            addMessageToDatabase(db, Number(ws.userId), message["channelId"], message["message"]);
         } catch(e: any){
             console.log(e);
-            ws.send("Failed to send");
+            ws.send(JSON.stringify({
+                err: "Failed to send"
+            }));
         }
     });
 

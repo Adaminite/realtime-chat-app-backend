@@ -10,7 +10,17 @@ router.get('/:id', async (req, res) => {
     }
 
     try{
-        res.send({result: await getMessagesByChannel(db, id)});
+        const queryResult = await getMessagesByChannel(db, id);
+        const messages = queryResult.map((messageObj: any) => {
+            return {
+                text: messageObj["text"],
+                time_stamp: messageObj["time_stamp"],
+                sender: messageObj["username"]
+            }
+        });
+
+        res.send({messages});
+        
         
     } catch(err){
         res.send({err});

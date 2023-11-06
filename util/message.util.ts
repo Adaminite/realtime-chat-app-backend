@@ -9,8 +9,8 @@ interface broadcastMessageEvent {
 function broadcast (message : any, users: Map<number, Set<webSocket>>, channels: Map<number, Set<number>> ) : void {
     if(message["event"] === "broadcastMessage"){
         broadcastMessage(message, users, channels);
-    } else if(message["event"] === "createChannel"){
-        broadcastChannelCreation(message, users, channels);
+    } else if(message["event"] === "joinChannel"){
+        broadcastChannelJoin(message, users, channels);
     } else{
         throw "Invalid message event";
     }
@@ -37,7 +37,7 @@ function broadcastMessage(message: any, users: Map<number, Set<webSocket>>, chan
     }
 }
 
-function broadcastChannelCreation(message: any, users: Map<number, Set<webSocket>>, channels: Map<number, Set<number>>): void {
+function broadcastChannelJoin(message: any, users: Map<number, Set<webSocket>>, channels: Map<number, Set<number>>): void {
     if(isNaN(Number(message["channelId"])) || !message["channelName"]){
         throw "Invalid channel metadata";
     }
@@ -54,10 +54,10 @@ function broadcastChannelCreation(message: any, users: Map<number, Set<webSocket
 
     channels.get(channelId)?.add(userId);
 
-    const sockets = users.get(message["userId"]) || new Set<webSocket>();
+    const sockets = users.get(userId) || new Set<webSocket>();
     for(let socket of sockets){
         socket.send(JSON.stringify({
-            "eventName": "createChannel",
+            "eventName": "joinChannel",
             "channelName": message["channelName"],
             "channelId": Number(message["channelId"]) 
         }));

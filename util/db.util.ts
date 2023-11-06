@@ -73,12 +73,19 @@ async function addChannelToDatabase(db: Connection, userId: number, channelName:
     return await queryDatabase(query, db);
 }
 
-async function addUserToChannel(db: Connection, userId: number, channelId: number): Promise<any>{
+async function addUserToChannelById(db: Connection, userId: number, channelId: number): Promise<any>{
     const escapedUserId = db.escape(userId);
+
+    const userMatch = await getUserById(db, userId);
+
+    if(userMatch.length === 0){
+        throw "No such user exists";
+    }
+
     const escapedChannelId = db.escape(channelId);
 
-    const validationQuery: string = 'SELECT * FROM user_to_channel WHERE ' + 
-    ` member_id=${escapedUserId} AND channel_id=${escapedChannelId}`;
+    const validationQuery: string = 'SELECT * FROM user_to_channel' + 
+    ` WHERE member_id=${escapedUserId} AND channel_id=${escapedChannelId}`;
 
     const check = await queryDatabase(validationQuery, db);
     if(check.length !== 0){
@@ -89,6 +96,15 @@ async function addUserToChannel(db: Connection, userId: number, channelId: numbe
     ` (${escapedUserId}, ${escapedChannelId})`;
 
     return await queryDatabase(insertQuery, db);
+}
+
+async function addUserToChannelByUsername(db: Connection, username: string, channelId: number){
+    const userMatch = await getUserByUsername(db, username);
+    if(userMatch.length === 0){
+        throw "No such user exists";
+    }
+
+    return await addUserToChannelById(db, Number(userMatch[0].id), channelId);
 }
 
 async function addMessageToDatabase(db: Connection, userId: number, channelId: number, message: string){
@@ -112,7 +128,7 @@ async function getUsersInChannel(db: Connection, channelId: number): Promise<any
 
 async function getMessagesByChannel(db: Connection, channelId: number): Promise<any> {
     const escapedChannelId = db.escape(channelId);
-    const query: string = 'SELECT messages.*, users.username FROM message' +
+    const query: string = 'SELECT messages.*, users.username FROM messages' +
     ' INNER JOIN users ON messages.sender_id = users.id' + 
     ` WHERE messages.receiver_id=${escapedChannelId}`;
     return await queryDatabase(query, db);
@@ -123,7 +139,13 @@ async function getUserByUsername(db: Connection, username: string): Promise<any>
         throw "Invalid username";
     }
 
-    const query = 'SELECT * FROM users WHERE username=' + db.escape(username);
+    const query = 'SELECT * FROM users WHERE username = ' + db.escape(username);
+
+    return await queryDatabase(query, db);
+}
+
+async function getUserById(db: Connection, userId: number): Promise<any>{
+    const query = 'SELECT * FROM users WHERE id = ' + db.escape(userId);
 
     return await queryDatabase(query, db);
 }
@@ -141,11 +163,7 @@ async function getChannelsAndMessageByUser(db: Connection, userId: number): Prom
     ' INNER JOIN user_to_channel ON user_to_channel.channel_id = channels.id' +
     ` WHERE user_to_channel.member_id = ${db.escape(userId)}`;
 
-    console.log(query);
-
     const userChannels =  await queryDatabase(query, db);
-
-    console.log(userChannels);
 
     const result =  await Promise.all(userChannels.map(async (channel: any) => {
         const messagesQuery: string = 'SELECT messages.*, users.username FROM messages' + 
@@ -165,8 +183,6 @@ async function getChannelsAndMessageByUser(db: Connection, userId: number): Prom
         })};
     }));
 
-    console.log(result);
-
     return result;
 }   
 
@@ -174,11 +190,13 @@ export {
     initializeDatabase,
     addUserToDatabase,
     addChannelToDatabase,
-    addUserToChannel,
+    addUserToChannelById,
+    addUserToChannelByUsername,
     addMessageToDatabase,
     getUsersInChannel,
     getChannelsByUser,
     getUserByUsername,
+    getUserById,
     getMessagesByChannel,
     getChannelsAndMessageByUser,
     queryDatabase
