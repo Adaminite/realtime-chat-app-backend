@@ -10,11 +10,6 @@ interface channelCreationEvent {
     channelName: string
 }
 
-router.use((req, res, next) => {
-    console.log("In channels router");
-    next();
-});
-
 router.use(express.json());
 
 router.get('/:id', async (req, res) => {

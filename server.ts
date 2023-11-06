@@ -65,8 +65,6 @@ interface webSocket extends ws.WebSocket{
 
 wsServer.on('connection', async (ws: webSocket, req: IncomingMessage) => {
     const parsedQuery = parseQueryString(req.url || "");
-    console.log(req.url);
-    console.log(parsedQuery);
     if(!parsedQuery["username"]){
         console.log("No username associated with connection. Aborting.");
         ws.close();
@@ -88,11 +86,10 @@ wsServer.on('connection', async (ws: webSocket, req: IncomingMessage) => {
         ws.close();
         return;
     }
-    console.log(userMatch);
 
     ws.connectionId = generateUniqueID();
     ws.userId = userMatch.id;
-    ws.username = userMatch.id;
+    ws.username = username;
 
     if(!users.has(userMatch.id)){
         users.set(userMatch.id, new Set<webSocket>());
@@ -130,7 +127,10 @@ wsServer.on('connection', async (ws: webSocket, req: IncomingMessage) => {
             if(!message["event"] || message["event"] !== "broadcastMessage"){
                 throw "User can only send channel messages via the WS connection";
             }
-            broadcast(message, users, channels);
+            broadcast({
+                ...message,
+                sender: ws.username
+            }, users, channels);
             addMessageToDatabase(db, Number(ws.userId), message["channelId"], message["message"]);
         } catch(e: any){
             console.log(e);

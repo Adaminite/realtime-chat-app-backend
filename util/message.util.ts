@@ -30,6 +30,8 @@ function broadcastMessage(message: any, users: Map<number, Set<webSocket>>, chan
             socket.send(JSON.stringify({
                 "eventName": "receiveMessage",
                 "message": message["message"],
+                "sender": message["sender"],
+                "time_stamp": message["time_stamp"],
                 "channelName": message["channelName"],
                 "channelId": Number(message["channelId"])
             }));
