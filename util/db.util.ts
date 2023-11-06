@@ -51,7 +51,7 @@ async function queryDatabase(query: string, db: Connection): Promise<any>{
     });
 }
 
-async function addUser(db: Connection, username: string, db_password: HashedPassword) : Promise<any>{
+async function addUserToDatabase(db: Connection, username: string, db_password: HashedPassword) : Promise<any>{
     const escapedHash = db.escape(db_password.hash);
     const escapedSalt = db.escape(db_password.salt);
 
@@ -63,7 +63,7 @@ async function addUser(db: Connection, username: string, db_password: HashedPass
     return result;
 }
 
-async function addChannel(db: Connection, userId: number, channelName: string) : Promise<any>{
+async function addChannelToDatabase(db: Connection, userId: number, channelName: string) : Promise<any>{
     const escapedUserId = db.escape(userId);
     const escapedChannelName = db.escape(channelName);
 
@@ -91,12 +91,12 @@ async function addUserToChannel(db: Connection, userId: number, channelId: numbe
     return await queryDatabase(insertQuery, db);
 }
 
-async function addMessage(db: Connection, userId: number, channelId: number, message: string){
+async function addMessageToDatabase(db: Connection, userId: number, channelId: number, message: string){
     const escapedUserId = db.escape(userId);
     const escapedChannelId = db.escape(channelId);
     const escapeedMessage = db.escape(message);
-    const insertQuery: string = 'INSERT INTO messages (sender_id, receiver_id, text, time_stamp)' +
-    ` (${escapedUserId}, ${escapedChannelId}, ${escapeedMessage})`;
+    const insertQuery: string = 'INSERT INTO messages (sender_id, receiver_id, text, time_stamp) VALUE' +
+    ` (${escapedUserId}, ${escapedChannelId}, ${escapeedMessage}, CURRENT_TIMESTAMP)`;
 
     return await queryDatabase(insertQuery, db);
 }
@@ -172,10 +172,10 @@ async function getChannelsAndMessageByUser(db: Connection, userId: number): Prom
 
 export {
     initializeDatabase,
-    addUser,
-    addChannel,
+    addUserToDatabase,
+    addChannelToDatabase,
     addUserToChannel,
-    addMessage,
+    addMessageToDatabase,
     getUsersInChannel,
     getChannelsByUser,
     getUserByUsername,

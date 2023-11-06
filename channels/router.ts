@@ -1,6 +1,6 @@
 import express from 'express';
 import { users, channels, db } from '../server.js';
-import { addChannel, addUserToChannel, getUsersInChannel } from '../util/db.util.js';
+import { addChannelToDatabase, addUserToChannel, getUsersInChannel } from '../util/db.util.js';
 import { broadcast } from '../util/message.util.js';
 
 const router = express.Router();
@@ -40,7 +40,7 @@ router.post('/create', async (req, res) => {
     const userId = req.body["userId"];
 
     try{
-        const result = await addChannel(db, userId, channelName);
+        const result = await addChannelToDatabase(db, userId, channelName);
         const channelId = result.insertId;
 
         await addUserToChannel(db, userId, channelId);

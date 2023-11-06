@@ -1,7 +1,7 @@
 import express from 'express';
 import { db } from '../server.js';
 import { hashPassword, HashedPassword } from '../util/auth.util.js';
-import { addUser, getChannelsAndMessageByUser, getChannelsByUser ,queryDatabase } from '../util/db.util.js';
+import { addUserToDatabase, getChannelsAndMessageByUser, getChannelsByUser ,queryDatabase } from '../util/db.util.js';
 
 const router = express.Router();
 
@@ -26,7 +26,7 @@ router.post('/register', async (req, res) => {
         }
 
         const db_password: HashedPassword = hashPassword(body["password"]);
-        const addResult = await addUser(db, escapedUsername, db_password);
+        const addResult = await addUserToDatabase(db, escapedUsername, db_password);
 
         res.send({
             user_id: addResult.insertId,

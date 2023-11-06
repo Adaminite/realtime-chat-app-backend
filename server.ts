@@ -9,7 +9,7 @@ import { router as usersRouter } from './users/router.js';
 import { router as messagesRouter } from './messages/router.js';
 import { broadcast } from './util/message.util.js';
 import { generateUniqueID, parseQueryString } from './util/connection.util.js';
-import { getChannelsByUser, getUserByUsername } from './util/db.util.js';
+import { addMessageToDatabase, getChannelsByUser, getUserByUsername } from './util/db.util.js';
 
 
 const app: express.Application = express();
@@ -130,6 +130,7 @@ wsServer.on('connection', async (ws: webSocket, req: IncomingMessage) => {
             const jsonMessage = JSON.parse(message);
             console.log(jsonMessage);
             broadcast(jsonMessage, users, channels);
+            addMessageToDatabase(db, Number(ws.userId), jsonMessage["channelId"], jsonMessage["message"]);
         } catch(e: any){
             console.log(e);
             ws.send("Failed to send");
