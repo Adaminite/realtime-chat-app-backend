@@ -46,6 +46,14 @@ function broadcastChannelCreation(message: any, users: Map<number, Set<webSocket
         throw "Missing user id for channel creation";
     }
 
+    const channelId = Number(message["channelId"]);
+    const userId = Number(message["userId"]);
+    if(!channels.has(channelId)){
+        channels.set(channelId, new Set<number>());
+    }
+
+    channels.get(channelId)?.add(userId);
+
     const sockets = users.get(message["userId"]) || new Set<webSocket>();
     for(let socket of sockets){
         socket.send(JSON.stringify({

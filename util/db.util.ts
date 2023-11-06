@@ -113,7 +113,7 @@ async function getUsersInChannel(db: Connection, channelId: number): Promise<any
 async function getMessagesByChannel(db: Connection, channelId: number): Promise<any> {
     const escapedChannelId = db.escape(channelId);
     const query: string = 'SELECT messages.*, users.username FROM message' +
-    ' LEFT JOIN users ON messages.sender_id = users.id' + 
+    ' INNER JOIN users ON messages.sender_id = users.id' + 
     ` WHERE messages.receiver_id=${escapedChannelId}`;
     return await queryDatabase(query, db);
 }
@@ -130,9 +130,33 @@ async function getUserByUsername(db: Connection, username: string): Promise<any>
 
 async function getChannelsByUser(db: Connection, userId: number): Promise<any>{
     const query: string = 'SELECT channels.* FROM user_to_channel' +
-    ` RIGHT JOIN channels ON user_to_channel.member_id = ${db.escape(userId)}`;
+    ' INNER JOIN channels ON user_to_channel.channel_id = channels.id' + 
+    ` WHERE user_to_channel.member_id = ${db.escape(userId)}`;
 
     return await queryDatabase(query, db);
+}   
+
+async function getChannelsAndMessageByUser(db: Connection, userId: number): Promise<any>{
+    const query: string = 'SELECT channels.* FROM channels' +
+    ' INNER JOIN user_to_channel ON user_to_channel.channel_id = channels.id' +
+    ` WHERE user_to_channel.member_id = ${db.escape(userId)}`;
+
+    console.log(query);
+
+    const userChannels =  await queryDatabase(query, db);
+
+    console.log(userChannels);
+
+    const result =  await Promise.all(userChannels.map(async (channel: any) => {
+        const messagesQuery: string = 'SELECT * FROM messages' + 
+        ` WHERE messages.receiver_id = ${db.escape(channel.id)}`;
+
+        return {...channel, messages: await queryDatabase(messagesQuery, db)};
+    }));
+
+    console.log(result);
+
+    return result;
 }   
 
 export {
@@ -145,5 +169,6 @@ export {
     getChannelsByUser,
     getUserByUsername,
     getMessagesByChannel,
+    getChannelsAndMessageByUser,
     queryDatabase
 }

@@ -1,7 +1,7 @@
 import express from 'express';
 import { db } from '../server.js';
 import { hashPassword, HashedPassword } from '../util/auth.util.js';
-import { addUser, queryDatabase } from '../util/db.util.js';
+import { addUser, getChannelsAndMessageByUser, getChannelsByUser ,queryDatabase } from '../util/db.util.js';
 
 const router = express.Router();
 
@@ -71,6 +71,45 @@ router.post('/login', async (req, res) => {
         });
 
     } catch(err){
+        res.send({err});
+    }
+});
+
+router.get('/channels/:id', async (req, res) => {
+    const id = Number(req.params.id);
+
+    try{
+        const queryResult = await getChannelsByUser(db, id);
+
+        res.send({
+            channels: queryResult.map((channelObject: any) => {
+                return {
+                    channelId: channelObject.id,
+                    channelName: channelObject.name
+                }
+            })
+        })
+    } catch (err){
+        res.send({err});
+    }
+
+});
+
+router.get('/channelswithmessages/:id', async (req, res) => {
+    const id = Number(req.params.id);
+
+    try{
+        const queryResult = await getChannelsAndMessageByUser(db, id);
+        res.send({
+            channels: queryResult.map((channelObject: any) => {
+                return { 
+                    channelId: channelObject.id,
+                    channelName: channelObject.name,
+                    messages: channelObject.messages
+                }
+            })
+        })
+    } catch (err){
         res.send({err});
     }
 });
