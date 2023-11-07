@@ -62,8 +62,6 @@ router.post('/adduser', async (req, res) => {
         return;
     }
 
-    console.log(req.body);
-
     const channelName = req.body["channelName"];
     const channelId = req.body["channelId"];
     const userToAdd = req.body["username"];

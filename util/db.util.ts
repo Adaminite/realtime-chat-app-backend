@@ -168,12 +168,11 @@ async function getChannelsAndMessageByUser(db: Connection, userId: number): Prom
     const result =  await Promise.all(userChannels.map(async (channel: any) => {
         const messagesQuery: string = 'SELECT messages.*, users.username FROM messages' + 
         ' INNER JOIN users ON messages.sender_id = users.id' +
-        ` WHERE messages.receiver_id = ${db.escape(channel.id)}`;
+        ` WHERE messages.receiver_id = ${db.escape(channel.id)}` +
+        ' ORDER BY messages.time_stamp ASC';
 
         const messages = await queryDatabase(messagesQuery, db);
         
-        console.log(messages);
-
         return {...channel, messages: messages.map((message: any) => {
             return {
                 time_stamp: message.time_stamp,
