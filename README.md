@@ -87,6 +87,9 @@ Some of the Git commits/changes in the history may appear out of order of when t
 
 2. How to move the storage of users to WebSockets outside of the server's memory, if important?
 
+3. (Web Frontend) How to pass state from parent to child when using Angular routing
+    * Use an injectable service that stores the state, inject it into the components, and have event emitters + subscriptions to update state within the components
+
 ## Technologies + Skills (Planned/Intended)
 
 * Node.js
