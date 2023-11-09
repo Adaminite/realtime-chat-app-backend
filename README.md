@@ -1,4 +1,4 @@
-# Realtime Chat Application
+# Realtime Chat App
 
 This application is an attempt at implementing an instant messaging application using WebSockets. The intended clients are a web client, an Android client, and an iOS client.  
 
