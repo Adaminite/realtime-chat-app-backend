@@ -4,6 +4,28 @@ This application is an attempt at implementing an instant messaging application 
 
 Notice: A basic web client has been implemented. Plans to develop an Android or iOS client for the application are unlikely and/or no longer intended to be worked on.
 
+## How to Run Locally
+
+* Link to the Frontend Repository: https://github.com/Adaminite/realtime-chat-app-web-frontend
+
+* Note: these instructions may not be 100% accurate. Please refer to other source as to how to walk through these steps if you get stuck.
+
+1. Clone local copies of both the frontend and backend repositories
+
+2. Run a 'npm install' in the frontend directory. Ensure that the developer dependencies are installed as well. 
+
+3. Run a 'npm install' in the backend directory.
+
+4. Create a .env file inside the root folder of the backend directory. This .env file will need to contain environment variables for the following values: GLOBAL_SALT (12 character string used as a global salt for passwords), PORT (port for server to listen on), DB_HOST (hostname for MySQL server), DB_USER (username for MySQL erver), DB_PASS (password for the DB_USER in the MySQL server), DB_NAME (name for the database). 
+
+5. Run backend server with 'npm start.' Ensure that the DB tables were created with the proper fields and that the server starts.
+
+6. Take note of the backend server's URL (e.g., 'http://localhost:3000'), and replace the value for 'serverURL' in the src/environments/environment.development.ts file (if you plan to run locally using ng-serve; otherwise, accordingly update the environment.ts file in the same folder). It is assumed a local run will be done. Note that there is no trailing slash in the example server URL. Please omit the trailing slash.
+
+7. Run a 'ng-serve.' Navigate to the subsequent local development server, which will likely be at http://localhost:4200. 
+
+8. Now, assuming everything went well, you should be able to use the application.
+
 ## Disclaimer
 
 Some of the Git commits/changes in the history may appear out of order of when they were actually implemented/introduced. This is likely because I may have worked for an extended period of time without committing changes and thus commit files accordingly to attempt to reflect individual/independent additions/changes.
