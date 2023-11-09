@@ -5,11 +5,6 @@ import { broadcast } from '../util/message.util.js';
 
 const router = express.Router();
 
-interface channelCreationEvent {
-    eventName: "createChannel",
-    channelName: string
-}
-
 router.use(express.json());
 
 router.get('/:id', async (req, res) => {
@@ -44,7 +39,7 @@ router.post('/create', async (req, res) => {
             userId,
             channelName,
             channelId,
-            event: "createChannel"
+            event: "joinChannel"
         }, users, channels);
 
         res.send({

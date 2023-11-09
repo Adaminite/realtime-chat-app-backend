@@ -1,11 +1,5 @@
 import { webSocket } from '../server.js';
 
-interface broadcastMessageEvent {
-    "eventName" : "receiveMessage",
-    "message": string,
-    "channelName": string
-}
-
 function broadcast (message : any, users: Map<number, Set<webSocket>>, channels: Map<number, Set<number>> ) : void {
     if(message["event"] === "broadcastMessage"){
         broadcastMessage(message, users, channels);

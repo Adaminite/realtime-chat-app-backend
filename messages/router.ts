@@ -1,6 +1,7 @@
 import express from 'express';
 import { db } from '../server.js';
 import { getMessagesByChannel } from '../util/db.util.js';
+
 const router = express.Router();
 
 router.get('/:id', async (req, res) => {
@@ -20,8 +21,6 @@ router.get('/:id', async (req, res) => {
         });
 
         res.send({messages});
-        
-        
     } catch(err){
         res.send({err});
     }
